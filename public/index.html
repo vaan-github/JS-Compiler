@@ -5,56 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced JS Compiler</title>
   <style>
-    body {
+    * {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #1e1e1e;
-      color: white;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #2e2e2e;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      padding: 20px;
+      overflow: hidden;
     }
     #editor-container {
-      height: 60vh;
       width: 100%;
-      border: 1px solid #333;
+      max-width: 800px;
+      height: 40vh;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background-color: #1e1e1e;
+      margin-bottom: 20px;
     }
     #controls {
+      width: 100%;
+      max-width: 800px;
       display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      background-color: #2d2d2d;
+      justify-content: center;
+      margin-bottom: 15px;
     }
     #controls button {
       background-color: #007acc;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 16px;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
+      transition: background-color 0.3s ease;
+      width: 150px;
     }
     #controls button:hover {
       background-color: #005f99;
     }
     #output {
-      height: 30vh;
       width: 100%;
-      padding: 10px;
-      background-color: #252526;
+      max-width: 800px;
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
       color: #d4d4d4;
-      overflow-y: auto;
-      border: 1px solid #333;
+      font-size: 14px;
+      margin-bottom: 20px; /* Ensure there's space between output and editor */
+    }
+    #output-text {
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
     }
     #output.error {
-      color: red;
+      color: #ff5c5c;
     }
+    .clear-button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      width: 120px;
+      align-self: flex-start;
+      transition: background-color 0.3s ease;
+    }
+    .clear-button:hover {
+      background-color: #c12e2a;
+    }
+
+    /* Mobile and tablet responsive design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      #editor-container, #output {
+        max-width: 100%;
+        margin-bottom: 10px;
+      }
+      #controls {
+        margin-bottom: 10px;
+      }
+      #controls button {
+        width: 100%;
+      }
+      .clear-button {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
+
   </style>
 </head>
 <body>
+  <div id="output">
+    <div id="output-text">Output will appear here.</div>
+    <button class="clear-button" onclick="clearOutput()">Clear</button>
+  </div>
+  
   <div id="controls">
     <button onclick="runCode()">Run Code</button>
-    <button onclick="formatCode()">Format Code</button>
   </div>
+
   <div id="editor-container"></div>
-  <div id="output"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
   <script>
@@ -68,13 +137,16 @@
         language: 'javascript',
         theme: 'vs-dark',
         automaticLayout: true,
+        wordWrap: 'on',  // Enable word wrapping
+        minimap: { enabled: false },  // Disable minimap for simplicity
+        scrollBeyondLastLine: false,  // Avoid unnecessary scroll space
       });
     });
 
     // Run Code Functionality
     async function runCode() {
       const code = editor.getValue();
-      const outputDiv = document.getElementById('output');
+      const outputDiv = document.getElementById('output-text');
       outputDiv.textContent = 'Executing...';
 
       try {
@@ -103,23 +175,11 @@
       }
     }
 
-    // Format Code Functionality
-    async function formatCode() {
-      const prettierCDN = 'https://cdn.jsdelivr.net/npm/prettier@2.8.0/standalone.js';
-      const parserBabel = 'https://cdn.jsdelivr.net/npm/prettier@2.8.0/parser-babel.js';
-
-      // Load Prettier
-      const [prettier, babelParser] = await Promise.all([
-        import(prettierCDN),
-        import(parserBabel),
-      ]);
-
-      const formattedCode = prettier.format(editor.getValue(), {
-        parser: 'babel',
-        plugins: [babelParser],
-      });
-
-      editor.setValue(formattedCode);
+    // Clear Output Functionality
+    function clearOutput() {
+      const outputDiv = document.getElementById('output-text');
+      outputDiv.textContent = 'Output will appear here.';
+      outputDiv.className = '';
     }
   </script>
 </body>
