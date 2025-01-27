@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 const { NodeVM } = require("vm2");
 
 const app = express();
@@ -9,6 +10,10 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files (e.g., index.html, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Endpoint to execute JavaScript code
 app.post("/execute", (req, res) => {
   const { code } = req.body;
 
@@ -44,6 +49,7 @@ app.post("/execute", (req, res) => {
   }
 });
 
+// Serve the app
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
