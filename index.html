@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced JS Compiler</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+    }
+    #editor-container {
+      height: 60vh;
+      width: 100%;
+      border: 1px solid #333;
+    }
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #2d2d2d;
+    }
+    #controls button {
+      background-color: #007acc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #controls button:hover {
+      background-color: #005f99;
+    }
+    #output {
+      height: 30vh;
+      width: 100%;
+      padding: 10px;
+      background-color: #252526;
+      color: #d4d4d4;
+      overflow-y: auto;
+      border: 1px solid #333;
+    }
+    #output.error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="formatCode()">Format Code</button>
+  </div>
+  <div id="editor-container"></div>
+  <div id="output"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
+  <script>
+    let editor;
+
+    // Load Monaco Editor
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: "// Write your JavaScript code here\nconsole.log('Hello, world!');",
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true,
+      });
+    });
+
+    // Run Code Functionality
+    async function runCode() {
+      const code = editor.getValue();
+      const outputDiv = document.getElementById('output');
+      outputDiv.textContent = 'Executing...';
+
+      try {
+        const response = await fetch('http://localhost:5000/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+
+        const data = await response.json();
+
+        // Handle the response and display the output
+        if (data.error) {
+          outputDiv.className = 'error';
+          outputDiv.textContent = `Error: ${data.error}`;
+        } else if (data.output !== undefined) {
+          outputDiv.className = '';
+          outputDiv.textContent = `Output: ${data.output}`;
+        } else {
+          outputDiv.className = 'error';
+          outputDiv.textContent = 'Unknown error occurred.';
+        }
+      } catch (err) {
+        outputDiv.className = 'error';
+        outputDiv.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    // Format Code Functionality
+    async function formatCode() {
+      const prettierCDN = 'https://cdn.jsdelivr.net/npm/prettier@2.8.0/standalone.js';
+      const parserBabel = 'https://cdn.jsdelivr.net/npm/prettier@2.8.0/parser-babel.js';
+
+      // Load Prettier
+      const [prettier, babelParser] = await Promise.all([
+        import(prettierCDN),
+        import(parserBabel),
+      ]);
+
+      const formattedCode = prettier.format(editor.getValue(), {
+        parser: 'babel',
+        plugins: [babelParser],
+      });
+
+      editor.setValue(formattedCode);
+    }
+  </script>
+</body>
+</html>
